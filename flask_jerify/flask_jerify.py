@@ -151,7 +151,7 @@ class Jerify(object):
                 jsonschema.validate(dict_, self.schemas[schema])
             except jsonschema.ValidationError as e:
                 log = ('JSON failed validation against schema \'{}\': '
-                       '{}'.format(schema, dict__))
+                       '{}'.format(schema, dict_))
                 self.logger.error(log)
                 raise InternalServerError()
         else:
