@@ -50,6 +50,7 @@ class Jerify(object):
             self.init_app(app)
 
         self.logger = self._get_logger()
+        # self.logger = self.app.logger
         self.schemas = self._get_schemas()
 
     def init_app(self, app):
@@ -98,7 +99,7 @@ class Jerify(object):
                         schema_name = file.replace('.schema.json', '')
                         schemas[schema_name] = schema
                     except json.decoder.JSONDecodeError as e:
-                        self.logger.warning('Decode failed: {}'.format(file))
+                        self.logger.warning('Failed to decode: {}'.format(file))
                         self.logger.debug(e.msg)
                     except jsonschema.ValidationError as e:
                         self.logger.warning('Invalid schema: {}'.format(file))
@@ -117,14 +118,11 @@ class Jerify(object):
                 try:
                     request.get_json()
                 except Exception as e:
-                    log = 'Invalid JSON: {}'.format(request.data)
+                    log = 'Received invalid JSON: {}'.format(request.data)
                     self.logger.info(log)
                     return bad_request('Invalid json'), 400
 
-                if not schema:
-                    return f(*args, **kwargs)
-
-                if schema in self.schemas:
+                if schema and schema in self.schemas:
                     try:
                         jsonschema.validate(request.get_json(),
                                             self.schemas[schema])
@@ -133,15 +131,19 @@ class Jerify(object):
                                '{}'.format(schema, request.get_json()))
                         self.logger.info(log)
                         return bad_request(e.message), 400
-                else:
-                    log = 'Unknown schema: {}'.format(schema)
-                    self.logger.error(log)
-                    raise UnknownSchemaError(log)
+                elif schema:
+                    self.logger.error('Unknown schema: {}'.format(schema))
+                    msg = 'Unknown schema: {}'.format(schema)
+                    raise UnknownSchemaError(msg)
+
+                return f(*args, **kwargs)
 
             return wrapper
+
         return decorator
 
-    def validate(self, doc, schema):
+    def validate(self, doc, schema, test):
+        raise ValidationError
         if schema in self.schemas:
             try:
                 jsonschema.validate(doc, self.schemas[schema])
