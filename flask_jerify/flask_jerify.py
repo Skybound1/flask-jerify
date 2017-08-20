@@ -80,13 +80,14 @@ class Jerify(object):
         return logger
 
     def _get_schemas(self):
+        schemas = {}
+
         with self.app.app_context():
             schemas_dir = current_app.config['JERIFY_SCHEMAS']
 
         if not os.path.isdir(schemas_dir):
-            return False
+            return schemas
 
-        schemas = {}
         for root, dirs, files in os.walk(schemas_dir):
             for file in files:
                 if not file.endswith('.schema.json'):
@@ -99,7 +100,7 @@ class Jerify(object):
                         schema_name = file.replace('.schema.json', '')
                         schemas[schema_name] = schema
                     except json.decoder.JSONDecodeError as e:
-                        self.logger.warning('Failed to decode: {}'.format(file))
+                        self.logger.warning('Decoding failed: {}'.format(file))
                         self.logger.debug(e.msg)
                     except jsonschema.ValidationError as e:
                         self.logger.warning('Invalid schema: {}'.format(file))
@@ -142,8 +143,7 @@ class Jerify(object):
 
         return decorator
 
-    def validate(self, doc, schema, test):
-        raise ValidationError
+    def validate(self, doc, schema):
         if schema in self.schemas:
             try:
                 jsonschema.validate(doc, self.schemas[schema])
