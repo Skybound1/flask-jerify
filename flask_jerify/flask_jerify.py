@@ -4,7 +4,7 @@ import logging
 import jsonschema
 from functools import wraps
 from flask import current_app, jsonify, request
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, InternalServerError
 
 
 try:
@@ -31,18 +31,11 @@ def jerror_handler(e):
 
 
 class Jerror(Exception):
-    def __init__(self, code, status, message):
+    def __init__(self, code, status, description):
         super(Jerror, self).__init__()
         self.code = code
+        self.name = status
         self.description = description
-
-
-class UnknownSchemaError(Exception):
-    pass
-
-
-class ValidationError(Exception):
-    pass
 
 
 class Jerify(object):
@@ -115,12 +108,11 @@ class Jerify(object):
                         self.logger.debug(e.msg)
 
         return schemas
-        
-    def _check_schema(self, schema):
+
+    def _check_request_schema(self, schema):
         if schema in self.schemas:
             try:
-                jsonschema.validate(request.get_json(),
-                                    self.schemas[schema])
+                jsonschema.validate(request.get_json(), self.schemas[schema])
             except jsonschema.ValidationError as e:
                 log = ('JSON failed validation against schema\'{}\': '
                        '{}'.format(schema, request.get_json()))
@@ -129,9 +121,9 @@ class Jerify(object):
         else:
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
-            raise UnknownSchemaError(log)
+            raise InternalServerError()
 
-    def check(self, schema=None):
+    def request(self, schema=None):
         def decorator(f):
             @wraps(f)
             def wrapper(*args, **kwargs):
@@ -143,22 +135,24 @@ class Jerify(object):
                     raise BadRequest('Invalid JSON')
 
                 if schema:
-                    self._check_schema(schema)
+                    self._check_request_schema(schema)
 
                 return f(*args, **kwargs)
             return wrapper
         return decorator
 
-    def validate(self, doc, schema):
+    def response(self, dict_, schema):
         if schema in self.schemas:
             try:
-                jsonschema.validate(doc, self.schemas[schema])
+                jsonschema.validate(dict_, self.schemas[schema])
             except jsonschema.ValidationError as e:
                 log = ('JSON failed validation against schema\'{}\': '
                        '{}'.format(schema, request.get_json()))
-                self.logger.info(log)
-                raise ValidationError(e)
+                self.logger.error(log)
+                raise InternalServerError()
         else:
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
-            raise UnknownSchemaError(log)
+            raise InternalServerError()
+
+        return jsonify(dict_)
