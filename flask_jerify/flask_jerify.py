@@ -48,7 +48,6 @@ class Jerify(object):
         self.logger = self._get_logger()
         self.schemas = self._get_schemas()
 
-
     def init_app(self, app):
         app.config.setdefault('JERIFY_SCHEMAS', _DEFAULT_SCHEMA_DIR)
         app.config.setdefault('JERIFY_LOG', _DEFAULT_LOG_LEVEL)
@@ -58,10 +57,8 @@ class Jerify(object):
         else:
             app.teardown_request(self.teardown)
 
-
     def teardown(self, exception):
         ctx = stack.top
-
 
     def _get_logger(self):
         logger = logging.getLogger(__name__)
@@ -76,7 +73,6 @@ class Jerify(object):
         logger.addHandler(console)
 
         return logger
-
 
     def _get_schemas(self):
         with self.app.app_context():
@@ -98,7 +94,7 @@ class Jerify(object):
                         schema_name = file.replace('.schema.json', '')
                         schemas[schema_name] = schema
                     except json.decoder.JSONDecodeError as e:
-                        self.logger.warning('Failed to decode: {}'.format(file))
+                        self.logger.warning('Decode failed: {}'.format(file))
                         self.logger.debug(e.msg)
                     except jsonschema.ValidationError as e:
                         self.logger.warning('Invalid schema: {}'.format(file))
@@ -109,7 +105,6 @@ class Jerify(object):
                         self.logger.debug(e.msg)
 
         return schemas
-
 
     def verify(self, schema=None):
         def decorator(f):
@@ -141,7 +136,6 @@ class Jerify(object):
 
             return wrapper
         return decorator
-
 
     def validate(self, doc, schema):
         if schema in self.schemas:
