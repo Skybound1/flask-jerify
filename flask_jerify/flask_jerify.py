@@ -48,7 +48,7 @@ class Jerify(object):
         else:
             app.teardown_request(self.teardown)
 
-    def teardown(self, exception):
+    def teardown(self, e):
         ctx = stack.top
 
     def _get_logger(self):
@@ -98,7 +98,7 @@ class Jerify(object):
 
         return schemas
 
-    def verify(self, schema=None):
+    def check(self, schema=None):
         def decorator(f):
             @wraps(f)
             def wrapper(*args, **kwargs):
@@ -140,3 +140,21 @@ class Jerify(object):
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
             raise UnknownSchemaError(log)
+
+
+class Jerror(Exception):
+    def __init__(self, code, status, message):
+        super(Jerror, self).__init__()
+        self.code = code
+        self.description = description
+
+
+def jerror_handler(e):
+    """http://jsonapi.org/format/#errors
+    """
+    response = {
+        "errors": [
+            {"status": e.name, "code": e.code, "detail": e.description}
+        ]
+    }
+    return jsonify(response), e.code
