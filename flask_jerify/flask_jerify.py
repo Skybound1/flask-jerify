@@ -36,6 +36,9 @@ def bad_request(msg):
 class UnknownSchemaError(Exception):
     pass
 
+class ValidationError(Exception):
+    pass
+
 
 class Jerify(object):
 
@@ -145,7 +148,7 @@ class Jerify(object):
                 log = ('JSON failed validation against schema\'{}\': '
                        '{}'.format(schema, request.get_json()))
                 self.logger.info(log)
-                raise jsonschema.ValidationError(e)
+                raise ValidationError(e)
         else:
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
