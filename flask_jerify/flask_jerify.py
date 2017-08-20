@@ -115,6 +115,21 @@ class Jerify(object):
                         self.logger.debug(e.msg)
 
         return schemas
+        
+    def _check_schema(self, schema):
+        if schema in self.schemas:
+            try:
+                jsonschema.validate(request.get_json(),
+                                    self.schemas[schema])
+            except jsonschema.ValidationError as e:
+                log = ('JSON failed validation against schema\'{}\': '
+                       '{}'.format(schema, request.get_json()))
+                self.logger.info(log)
+                raise BadRequest(e.message)
+        else:
+            log = 'Unknown schema: {}'.format(schema)
+            self.logger.error(log)
+            raise UnknownSchemaError(log)
 
     def check(self, schema=None):
         def decorator(f):
@@ -133,21 +148,6 @@ class Jerify(object):
                 return f(*args, **kwargs)
             return wrapper
         return decorator
-
-    def _check_schema(self, schema):
-        if schema in self.schemas:
-            try:
-                jsonschema.validate(request.get_json(),
-                                    self.schemas[schema])
-            except jsonschema.ValidationError as e:
-                log = ('JSON failed validation against schema\'{}\': '
-                       '{}'.format(schema, request.get_json()))
-                self.logger.info(log)
-                raise BadRequest(e.message)
-        else:
-            log = 'Unknown schema: {}'.format(schema)
-            self.logger.error(log)
-            raise UnknownSchemaError(log)
 
     def validate(self, doc, schema):
         if schema in self.schemas:
