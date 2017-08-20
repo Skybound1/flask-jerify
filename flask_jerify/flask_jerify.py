@@ -142,7 +142,7 @@ class Jerify(object):
         return decorator
 
     def response(self, dict_, schema):
-        validate(dict_, schema)
+        self.validate(dict_, schema)
         return jsonify(dict_)
 
     def validate(self, dict_, schema):
