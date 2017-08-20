@@ -2,7 +2,7 @@
 Flask-Jerify
 ------------
 
-"JSON Verify". Provides a decorator to verify request data is valid JSON. 
+"JSON Verify". Provides a decorator to verify request data is valid JSON.
 Optionally validates the JSON against a JSON Schema.
 """
 from setuptools import setup
@@ -10,7 +10,8 @@ from setuptools import setup
 
 setup(
     name='Flask-Jerify',
-    version='0.0.1',
+    packages=['flask_jerify'],
+    version='0.0.2',
     url='http://github.com/alx-k/flask-jerify',
     license='BSD',
     author='Alexandre Kaskasoli',
@@ -25,8 +26,8 @@ setup(
         'flask',
         'jsonschema>=2.6.0'
     ],
-    keywords = ['flask', 'json', 'schema', 'validator', 'jsonschema'],
-    classifiers = [
+    keywords=['flask', 'json', 'schema', 'validator', 'jsonschema'],
+    classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
