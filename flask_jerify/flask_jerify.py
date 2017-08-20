@@ -142,6 +142,10 @@ class Jerify(object):
         return decorator
 
     def response(self, dict_, schema):
+        validate(dict_, schema)
+        return jsonify(dict_)
+
+    def validate(self, dict_, schema):
         if schema in self.schemas:
             try:
                 jsonschema.validate(dict_, self.schemas[schema])
@@ -154,5 +158,3 @@ class Jerify(object):
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
             raise InternalServerError()
-
-        return jsonify(dict_)
