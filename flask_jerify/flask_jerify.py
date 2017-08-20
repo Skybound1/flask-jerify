@@ -36,6 +36,7 @@ def bad_request(msg):
 class UnknownSchemaError(Exception):
     pass
 
+
 class ValidationError(Exception):
     pass
 
