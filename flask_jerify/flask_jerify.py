@@ -19,6 +19,24 @@ _LOG_FORMAT = ('[%(asctime)s] [%(process)d] [%(levelname)s] [%(name)s] '
                '%(message)s')
 
 
+def jerror_handler(e):
+    """http://jsonapi.org/format/#errors
+    """
+    response = {
+        "errors": [
+            {"status": e.name, "code": e.code, "detail": e.description}
+        ]
+    }
+    return jsonify(response), e.code
+
+
+class Jerror(Exception):
+    def __init__(self, code, status, message):
+        super(Jerror, self).__init__()
+        self.code = code
+        self.description = description
+
+
 class UnknownSchemaError(Exception):
     pass
 
@@ -109,23 +127,27 @@ class Jerify(object):
                     self.logger.info(log)
                     raise BadRequest('Invalid JSON')
 
-                if schema and schema in self.schemas:
-                    try:
-                        jsonschema.validate(request.get_json(),
-                                            self.schemas[schema])
-                    except jsonschema.ValidationError as e:
-                        log = ('JSON failed validation against schema\'{}\': '
-                               '{}'.format(schema, request.get_json()))
-                        self.logger.info(log)
-                        raise BadRequest(e.message)
-                elif schema:
-                    log = 'Unknown schema: {}'.format(schema)
-                    self.logger.error(log)
-                    raise UnknownSchemaError(log)
+                if schema:
+                    self._check_schema(schema)
 
                 return f(*args, **kwargs)
             return wrapper
         return decorator
+
+    def _check_schema(self, schema):
+        if schema in self.schemas:
+            try:
+                jsonschema.validate(request.get_json(),
+                                    self.schemas[schema])
+            except jsonschema.ValidationError as e:
+                log = ('JSON failed validation against schema\'{}\': '
+                       '{}'.format(schema, request.get_json()))
+                self.logger.info(log)
+                raise BadRequest(e.message)
+        else:
+            log = 'Unknown schema: {}'.format(schema)
+            self.logger.error(log)
+            raise UnknownSchemaError(log)
 
     def validate(self, doc, schema):
         if schema in self.schemas:
@@ -140,21 +162,3 @@ class Jerify(object):
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)
             raise UnknownSchemaError(log)
-
-
-class Jerror(Exception):
-    def __init__(self, code, status, message):
-        super(Jerror, self).__init__()
-        self.code = code
-        self.description = description
-
-
-def jerror_handler(e):
-    """http://jsonapi.org/format/#errors
-    """
-    response = {
-        "errors": [
-            {"status": e.name, "code": e.code, "detail": e.description}
-        ]
-    }
-    return jsonify(response), e.code
