@@ -2,6 +2,8 @@
 
 "JSON Verify". Easy validation against JSON schemas for Flask APIs.
 
+Leverages `jsonschema`.
+
 ## Installation
 
 ```
