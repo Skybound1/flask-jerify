@@ -10,7 +10,7 @@ pip install flask-jerify
 
 ## Usage
 
-### JSON Schemas
+### Loading JSON Schemas
 
 `flask-jerify` will by default look for a `./schemas` directory in the running
 directory and read all `.schema.json`  files:
@@ -22,7 +22,7 @@ directory and read all `.schema.json`  files:
     └── test.schema.json
 ```
 
-The `test.schema.json` demands a compulsory `target` parameter and 
+The sample `test.schema.json` demands a compulsory `target` parameter and 
 doesn't accept any additional parameters:
 
 ```
@@ -41,7 +41,7 @@ doesn't accept any additional parameters:
 }
 ```
 
-The schema can then be accessed with the file prefix, ie: `test`, with Jerify.
+The schema can then be accessed with the file prefix, ie: `test` within Jerify.
 
 ### Validate Requests and JSON Error Responses
 
