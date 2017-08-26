@@ -1,0 +1,13 @@
+{
+    "title": "Request test schema",
+    "type": "object",
+    "properties": {
+        "target": {
+            "type": "string"
+        }
+    },
+    "required": [
+      "target"
+    ],
+    "additionalProperties": false
+}
