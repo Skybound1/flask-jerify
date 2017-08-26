@@ -19,7 +19,7 @@ directory and read all `.schema.json`  files:
 .
 ├── app.py
 └── schemas
-    └── test.schema.json
+    └── test-schame.schema.json
 ```
 
 The sample `test.schema.json` demands a compulsory `target` parameter and 
@@ -41,13 +41,14 @@ doesn't accept any additional parameters:
 }
 ```
 
-The schema can then be accessed with the file prefix, ie: `test` within Jerify.
+The schema can then be accessed with the file prefix, ie: `test-schame` within 
+Jerify.
 
 ### Validate Requests and JSON Error Responses
 
 The following snippet sets up an `app` with `jerify`'s custom error handler, 
-instatiates `Jerify`, and sets up a route that accepts json conforming to the 
-defined `test.schema.json` JSON schema.
+instantiates `Jerify`, and sets up a route that accepts JSON conforming to the 
+defined `test-schema.schema.json` JSON schema.
 
 ```
 from flask_jerify import Jerify, jerror_handler
@@ -61,7 +62,7 @@ for code in default_exceptions:
 jerify = Jerify(app)
 
 @app.route('/test', methods=['POST'])
-@jerify.request('test')
+@jerify.request('test-schema')
 def test():
     return '{"validated": "true"}', 200
 ```
@@ -115,7 +116,7 @@ $ curl -d '{"target": "test", "hello":"world"}' -H "Content-Type: application/js
 ```
 @app.route('/test', methods=['POST'])
 def test():
-    return jerify.validate({'hello': 'world'}, 'test'), 200
+    return jerify.validate({'hello': 'world'}, 'test-schema'), 200
 ```
 
 ```
