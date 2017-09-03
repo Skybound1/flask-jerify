@@ -3,7 +3,7 @@ import json
 import logging
 import jsonschema
 from functools import wraps
-from flask import current_app, jsonify, request
+from flask import current_app, jsonify, request, json
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 
@@ -22,11 +22,17 @@ _LOG_FORMAT = ('[%(asctime)s] [%(process)d] [%(levelname)s] [%(name)s] '
 def jerror_handler(e):
     """http://jsonapi.org/format/#errors
     """
-    response = {
-        "errors": [
-            {"status": e.name, "code": e.code, "detail": e.description}
-        ]
-    }
+
+    if not e.description:
+        raise InternalServerError()
+
+    app.logger.error(e.description)
+
+    response = {'errors': []}
+    response['errors'].append({"status": e.name,
+                               "code": e.code,
+                               "detail": e.description})
+
     return jsonify(response), e.code
 
 
@@ -47,7 +53,6 @@ class Jerify(object):
             self.init_app(app)
 
         self.logger = self._get_logger()
-        # self.logger = self.app.logger
         self.schemas = self._get_schemas()
 
     def init_app(self, app):
@@ -127,9 +132,7 @@ class Jerify(object):
         def decorator(f):
             @wraps(f)
             def wrapper(*args, **kwargs):
-                try:
-                    request.get_json()
-                except Exception as e:
+                if not request.get_json(silent=True):
                     log = 'Received invalid JSON: {}'.format(request.data)
                     self.logger.info(log)
                     raise BadRequest('Invalid JSON')
