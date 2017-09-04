@@ -15,7 +15,7 @@ jerify = Jerify(app)
 @app.route('/test', methods=['POST'])
 @jerify.request('test')
 def test():
-    return jerify.validate({'hello': 'world'}, 'test'), 200
+    return jerify.response({'target': 'world'}, 'test'), 200
 
 
 app.run(debug=True)
