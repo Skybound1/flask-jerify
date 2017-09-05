@@ -23,7 +23,7 @@ def jerror_handler(e):
     """http://jsonapi.org/format/#errors
     """
 
-    if not hasattr('name', e):
+    if not hasattr(e, 'name'):
         raise InternalServerError(e.description)
 
     app.logger.error(e.description)
