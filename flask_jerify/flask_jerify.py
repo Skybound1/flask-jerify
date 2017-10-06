@@ -24,9 +24,9 @@ def jerror_handler(e):
     """
 
     if not hasattr(e, 'name'):
-        raise InternalServerError(e.description)
-
-    app.logger.error(e.description)
+        e.name = 'Internal Server Error'
+        e.code = '500'
+        e.description = '{}: {}'.format(e.__class__.__name__, str(e))
 
     response = {'errors': []}
     response['errors'].append({"status": e.name,
@@ -156,7 +156,7 @@ class Jerify(object):
                 log = ('JSON failed validation against schema \'{}\': '
                        '{}'.format(schema, dict_))
                 self.logger.error(log)
-                raise InternalServerError()
+                raise InternalServerError(log)
         else:
             log = 'Unknown schema: {}'.format(schema)
             self.logger.error(log)

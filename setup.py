@@ -11,7 +11,7 @@ from setuptools import setup
 setup(
     name='Flask-Jerify',
     packages=['flask_jerify'],
-    version='0.0.12',
+    version='0.0.23',
     url='http://github.com/alx-k/flask-jerify',
     license='BSD',
     author='Alexandre Kaskasoli',
