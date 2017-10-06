@@ -100,7 +100,10 @@ class Jerify(object):
                         schema = json.load(file_handler)
                         jsonschema.Draft4Validator.check_schema(schema)
                         schema_name = file.replace('.schema.json', '')
-                        schemas[schema_name] = schema
+                        schemas[schema_name] = (
+                                os.path.join(os.getcwd(), root),
+                                schema
+                                )
                     except json.decoder.JSONDecodeError as e:
                         self.logger.warning('Decoding failed: {}'.format(file))
                         self.logger.debug(e.msg)
@@ -114,17 +117,26 @@ class Jerify(object):
 
         return schemas
 
-    def _check_request_schema(self, schema):
-        if schema in self.schemas:
+    def _check_request_schema(self, schema_name):
+        if schema_name in self.schemas:
             try:
-                jsonschema.validate(request.get_json(), self.schemas[schema])
+                root, schema = self.schemas[schema_name]
+                resolver = jsonschema.RefResolver(
+                        base_uri=f'file://{root}/',
+                        referrer=schema
+                        )
+                jsonschema.validate(
+                        request.get_json(),
+                        schema,
+                        resolver=resolver
+                        )
             except jsonschema.ValidationError as e:
                 log = ('JSON failed validation against schema\'{}\': '
-                       '{}'.format(schema, request.get_json()))
+                       '{}'.format(schema_name, request.get_json()))
                 self.logger.info(log)
                 raise BadRequest(e.message)
         else:
-            log = 'Unknown schema: {}'.format(schema)
+            log = 'Unknown schema: {}'.format(schema_name)
             self.logger.error(log)
             raise InternalServerError()
 
@@ -148,16 +160,26 @@ class Jerify(object):
         self.validate(dict_, schema)
         return jsonify(dict_)
 
-    def validate(self, dict_, schema):
-        if schema in self.schemas:
+    def validate(self, dict_, schema_name):
+        if schema_name in self.schemas:
             try:
-                jsonschema.validate(dict_, self.schemas[schema])
+                root, schema = self.schemas[schema_name]
+                resolver = jsonschema.RefResolver(
+                        base_uri=f'file://{root}/',
+                        referrer=schema
+                        )
+                jsonschema.validate(
+                        request.get_json(),
+                        schema,
+                        resolver=resolver
+                        )
             except jsonschema.ValidationError as e:
+                self.logger.error(e)
                 log = ('JSON failed validation against schema \'{}\': '
-                       '{}'.format(schema, dict_))
+                       '{}'.format(schema_name, dict_))
                 self.logger.error(log)
                 raise InternalServerError(log)
         else:
-            log = 'Unknown schema: {}'.format(schema)
+            log = 'Unknown schema: {}'.format(schema_name)
             self.logger.error(log)
             raise InternalServerError()
